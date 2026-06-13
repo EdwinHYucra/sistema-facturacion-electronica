@@ -1,0 +1,416 @@
+<section class="space-y-6">
+  <!-- Encabezado -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h1 class="text-[24px] font-bold leading-tight text-slate-900">
+        Gestión de Clientes
+      </h1>
+
+      <p class="mt-2 text-sm text-slate-500">
+        Administre el directorio de clientes para la emisión de comprobantes.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="abrirNuevo()"
+      class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-500"
+    >
+      <lucide-icon
+        [img]="icons.Plus"
+        class="h-4 w-4"
+      ></lucide-icon>
+      Nuevo cliente
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="mb-5 flex items-center gap-2">
+      <lucide-icon
+        [img]="icons.Filter"
+        class="h-4 w-4 text-slate-600"
+      ></lucide-icon>
+
+      <h2 class="text-sm font-bold text-slate-800">
+        Filtros de Búsqueda
+      </h2>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Tipo de Documento
+        </label>
+
+        <select
+          [(ngModel)]="filtros.tipoDocumento"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option value="">Todos</option>
+          <option value="RUC">RUC</option>
+          <option value="DNI">DNI</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Número de Documento
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="filtros.numeroDocumento"
+          placeholder="Ej. 2010..."
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Razón Social / Nombre
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="filtros.razonSocial"
+          placeholder="Buscar por nombre..."
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Estado
+        </label>
+
+        <select
+          [(ngModel)]="filtros.estado"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option value="">Todos</option>
+          <option value="Activo">Activo</option>
+          <option value="Inactivo">Inactivo</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4 flex justify-end gap-2">
+      <button
+        type="button"
+        (click)="limpiarFiltros()"
+        class="inline-flex h-9 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+      >
+        Limpiar
+      </button>
+
+      <button
+        type="button"
+        class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+      >
+        <lucide-icon
+          [img]="icons.Search"
+          class="h-4 w-4"
+        ></lucide-icon>
+        Buscar
+      </button>
+    </div>
+  </div>
+
+  @if (mensaje) {
+    <p class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+      {{ mensaje }}
+    </p>
+  }
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+      {{ error }}
+    </p>
+  }
+
+  <!-- Tabla -->
+  <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-slate-50">
+          <tr class="border-b border-slate-200">
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Tipo Doc.
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Número
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Razón Social / Nombre
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Nombre Comercial
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Dirección
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Correo
+            </th>
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500">
+              Estado
+            </th>
+            <th class="px-5 py-3 text-right text-xs font-semibold text-slate-500">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+          @if (cargando) {
+            <tr>
+              <td colspan="8" class="px-5 py-8 text-center text-sm text-slate-500">
+                Cargando clientes...
+              </td>
+            </tr>
+          }
+
+          @for (cliente of clientesFiltrados; track cliente.idCliente || cliente.numeroDocumento) {
+            <tr class="transition hover:bg-slate-50">
+              <td class="whitespace-nowrap px-5 py-4">
+                <div class="flex items-center gap-2 text-sm text-slate-700">
+                  <lucide-icon
+                    [img]="icons.FileText"
+                    class="h-4 w-4 text-slate-500"
+                  ></lucide-icon>
+                  {{ cliente.tipoDocumento }}
+                </div>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-slate-900">
+                {{ cliente.numeroDocumento }}
+              </td>
+
+              <td class="min-w-[210px] px-5 py-4 text-sm font-medium text-slate-800">
+                {{ cliente.razonSocial }}
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500">
+                {{ cliente.nombreComercial }}
+              </td>
+
+              <td class="min-w-[220px] px-5 py-4 text-sm text-slate-500">
+                {{ cliente.direccion }}
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500">
+                {{ cliente.correo }}
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-4 text-sm font-bold">
+                <span [ngClass]="getEstadoClass(cliente.estado)">
+                  {{ cliente.estado }}
+                </span>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                    title="Ver cliente"
+                  >
+                    <lucide-icon
+                      [img]="icons.Eye"
+                      class="h-4 w-4"
+                    ></lucide-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="abrirEditar(cliente)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                    title="Editar cliente"
+                  >
+                    <lucide-icon
+                      [img]="icons.Pencil"
+                      class="h-4 w-4"
+                    ></lucide-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="eliminar(cliente)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-red-500"
+                    title="Eliminar cliente"
+                  >
+                    <lucide-icon
+                      [img]="icons.Trash2"
+                      class="h-4 w-4"
+                    ></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+
+          @if (!cargando && clientesFiltrados.length === 0) {
+            <tr>
+              <td colspan="8" class="px-5 py-8 text-center text-sm text-slate-500">
+                No se encontraron clientes.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer tabla -->
+    <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm text-slate-500">
+        Mostrando {{ clientesFiltrados.length }} de {{ clientes.length }} registros
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="h-9 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-400"
+        >
+          Anterior
+        </button>
+
+        <button
+          type="button"
+          class="h-9 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (mostrarModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 px-4 backdrop-blur-sm">
+      <form
+        class="w-full max-w-2xl rounded-xl border border-slate-200 bg-white shadow-xl"
+        (ngSubmit)="guardar()"
+      >
+        <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">
+              {{ modoEdicion ? 'Editar cliente' : 'Nuevo cliente' }}
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              Complete los datos tributarios del cliente.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            (click)="cerrarModal()"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+          >
+            <lucide-icon [img]="icons.X" class="h-4 w-4"></lucide-icon>
+          </button>
+        </div>
+
+        <div class="grid gap-4 px-6 py-5 md:grid-cols-2">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Tipo documento</label>
+            <select
+              name="tipoDocumento"
+              [(ngModel)]="formulario.tipoDocumento"
+              class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            >
+              <option value="RUC">RUC</option>
+              <option value="DNI">DNI</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Número documento</label>
+            <input
+              name="numeroDocumento"
+              [(ngModel)]="formulario.numeroDocumento"
+              required
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="mb-2 block text-sm font-medium text-slate-800">Razón social / Nombre</label>
+            <input
+              name="razonSocial"
+              [(ngModel)]="formulario.razonSocial"
+              required
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Nombre comercial</label>
+            <input
+              name="nombreComercial"
+              [(ngModel)]="formulario.nombreComercial"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Correo</label>
+            <input
+              name="correo"
+              type="email"
+              [(ngModel)]="formulario.correo"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Teléfono</label>
+            <input
+              name="telefono"
+              [(ngModel)]="formulario.telefono"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Estado</label>
+            <select
+              name="estado"
+              [(ngModel)]="formulario.estado"
+              class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            >
+              <option value="Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="mb-2 block text-sm font-medium text-slate-800">Dirección</label>
+            <input
+              name="direccion"
+              [(ngModel)]="formulario.direccion"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+          <button
+            type="button"
+            (click)="cerrarModal()"
+            class="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="guardando"
+            class="h-10 rounded-lg bg-amber-400 px-5 text-sm font-bold text-slate-900 hover:bg-amber-500 disabled:opacity-60"
+          >
+            {{ guardando ? 'Guardando...' : 'Guardar cliente' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</section>

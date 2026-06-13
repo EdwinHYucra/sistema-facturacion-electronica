@@ -1,0 +1,74 @@
+@if (mobileOpen) {
+  <button
+    type="button"
+    class="fixed inset-0 z-40 bg-slate-900/40 lg:hidden"
+    (click)="cerrarMobile()"
+    aria-label="Cerrar menú"
+  ></button>
+}
+
+<aside
+  class="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-slate-200 bg-white transition-transform duration-200 lg:z-40 lg:w-56 lg:translate-x-0"
+  [ngClass]="mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+>
+  <div class="flex h-14 items-center justify-between border-b border-slate-200 px-3">
+    <div class="flex min-w-0 items-center gap-2">
+      <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-400 text-white">
+        <lucide-icon
+          [img]="logoIcon"
+          class="h-5 w-5"
+        ></lucide-icon>
+      </div>
+
+      <h1 class="max-w-36 truncate text-sm font-bold leading-none text-amber-500 lg:max-w-32">
+        Sistema de Factura
+      </h1>
+    </div>
+
+    <button
+      type="button"
+      (click)="cerrarMobile()"
+      class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100"
+      title="Cerrar menú"
+    >
+      <lucide-icon
+        [img]="collapseIcon"
+        class="h-4 w-4"
+      ></lucide-icon>
+    </button>
+  </div>
+
+  <nav class="flex-1 space-y-1 overflow-y-auto px-2 py-4">
+    @for (item of menuItems; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="bg-amber-50 text-amber-500 font-semibold"
+        [routerLinkActiveOptions]="{ exact: item.exact }"
+        (click)="cerrarMobile()"
+        class="group flex h-9 items-center gap-2 rounded-lg px-3 text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+      >
+        <lucide-icon
+          [img]="item.icon"
+          class="h-4 w-4 shrink-0"
+        ></lucide-icon>
+
+        <span class="truncate">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="border-t border-slate-200 p-2">
+    <button
+      type="button"
+      (click)="cerrarSesion()"
+      class="flex h-9 w-full items-center gap-2 rounded-lg px-3 text-left text-[13px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+    >
+      <lucide-icon
+        [img]="logoutIcon"
+        class="h-4 w-4 shrink-0"
+      ></lucide-icon>
+
+      <span>Cerrar sesión</span>
+    </button>
+  </div>
+</aside>

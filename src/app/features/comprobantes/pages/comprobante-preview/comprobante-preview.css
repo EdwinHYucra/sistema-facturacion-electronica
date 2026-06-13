@@ -1,0 +1,19 @@
+@media print {
+  :host {
+    display: block;
+  }
+
+  .print-hidden {
+    display: none !important;
+  }
+
+  .print-document {
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  section {
+    background: white !important;
+    padding: 0 !important;
+  }
+}

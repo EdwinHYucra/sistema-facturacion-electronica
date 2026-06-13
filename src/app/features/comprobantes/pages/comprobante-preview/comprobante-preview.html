@@ -1,0 +1,229 @@
+<section class="min-h-screen bg-slate-100 pb-10 text-slate-900">
+  <header class="print-hidden border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-3">
+        <a routerLink="/comprobantes" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900">
+          <lucide-icon [img]="icons.ArrowLeft" class="h-4 w-4"></lucide-icon>
+          Volver
+        </a>
+        <span class="h-5 w-px bg-slate-200"></span>
+        <span class="text-sm font-semibold text-slate-900">Vista Previa de Impresion</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <a
+          [routerLink]="comprobante?.idComprobante ? ['/comprobantes', comprobante?.idComprobante] : ['/comprobantes']"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+        >
+          <lucide-icon [img]="icons.X" class="h-4 w-4"></lucide-icon>
+          Cerrar
+        </a>
+        <button
+          type="button"
+          (click)="print()"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+        >
+          <lucide-icon [img]="icons.Download" class="h-4 w-4"></lucide-icon>
+          Descargar PDF
+        </button>
+        <button
+          type="button"
+          (click)="print()"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 shadow-sm hover:bg-amber-500"
+        >
+          <lucide-icon [img]="icons.Printer" class="h-4 w-4"></lucide-icon>
+          Imprimir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-6xl px-5 py-8">
+    <h1 class="print-hidden mb-6 text-2xl font-bold text-slate-900">Vista Previa de Comprobante</h1>
+
+    @if (error) {
+      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+        {{ error }}
+      </div>
+    }
+
+    @if (loading) {
+      <div class="rounded-lg border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+        Cargando comprobante...
+      </div>
+    }
+
+    @if (comprobante) {
+      <article class="mx-auto w-full max-w-[900px] bg-white p-10 shadow-sm print-document md:p-14">
+        <div class="grid gap-8 md:grid-cols-[1fr_320px] md:items-start">
+          <div>
+            <div class="flex items-center gap-4">
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl border-4 border-amber-400"></div>
+              <div>
+                <p class="text-2xl font-bold text-amber-400">
+                  {{ comprobante.empresa?.nombreComercial || comprobante.empresa?.razonSocial || 'Ferreycorp S.A.A.' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-5 space-y-1 text-sm text-slate-500">
+              <p>{{ comprobante.empresa?.direccionFiscal || 'Av. Industrial 3300, Lima - Peru' }}</p>
+              <p>Telf: {{ comprobante.empresa?.telefono || '-' }}</p>
+              <p>{{ comprobante.empresa?.correo || 'facturacion.electronica@ferreycorp.com.pe' }}</p>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-2xl border-2 border-amber-400 text-center">
+            <div class="bg-white px-5 py-4 text-lg font-bold tracking-[0.18em] text-slate-900">
+              R.U.C. {{ comprobante.empresa?.ruc || '-' }}
+            </div>
+            <div class="bg-amber-400 px-5 py-4 text-lg font-bold tracking-[0.18em] text-slate-900">
+              {{ tipoDocumento }}
+            </div>
+            <div class="bg-white px-5 py-4 text-lg font-bold tracking-[0.18em] text-slate-900">
+              {{ serieCorrelativo }}
+            </div>
+          </div>
+        </div>
+
+        <div class="my-8 border-t border-slate-200"></div>
+
+        <section class="rounded-xl border border-slate-200 p-5">
+          <div class="grid gap-8 md:grid-cols-2">
+            <div>
+              <h2 class="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Datos del cliente</h2>
+              <dl class="space-y-3 text-sm">
+                <div class="grid grid-cols-[110px_1fr] gap-3">
+                  <dt class="text-slate-500">Senor(es):</dt>
+                  <dd class="font-semibold text-slate-900">{{ comprobante.cliente?.razonSocial || '-' }}</dd>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-3">
+                  <dt class="text-slate-500">{{ comprobante.cliente?.tipoDocumento || 'Doc.' }}:</dt>
+                  <dd>{{ comprobante.cliente?.numeroDocumento || '-' }}</dd>
+                </div>
+                <div class="grid grid-cols-[110px_1fr] gap-3">
+                  <dt class="text-slate-500">Direccion:</dt>
+                  <dd>{{ comprobante.cliente?.direccion || '-' }}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div>
+              <h2 class="mb-4 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Datos del documento</h2>
+              <dl class="space-y-3 text-sm">
+                <div class="grid grid-cols-[150px_1fr] gap-3">
+                  <dt class="text-slate-500">Fecha Emision:</dt>
+                  <dd class="font-semibold">{{ formatDate(comprobante.fechaEmision) }}</dd>
+                </div>
+                <div class="grid grid-cols-[150px_1fr] gap-3">
+                  <dt class="text-slate-500">Moneda:</dt>
+                  <dd>{{ comprobante.moneda }}</dd>
+                </div>
+                <div class="grid grid-cols-[150px_1fr] gap-3">
+                  <dt class="text-slate-500">Estado SUNAT:</dt>
+                  <dd>{{ comprobante.estado }}</dd>
+                </div>
+                <div class="grid grid-cols-[150px_1fr] gap-3">
+                  <dt class="text-slate-500">Codigo CDR:</dt>
+                  <dd>{{ respuesta?.codigoRespuesta || '-' }}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-8 overflow-hidden rounded-xl border border-slate-200">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-3 py-3 text-left font-semibold">Codigo</th>
+                <th class="px-3 py-3 text-left font-semibold">Descripcion del Producto/Servicio</th>
+                <th class="px-3 py-3 text-center font-semibold">Cant.</th>
+                <th class="px-3 py-3 text-center font-semibold">U.M.</th>
+                <th class="px-3 py-3 text-right font-semibold">P. Unitario</th>
+                <th class="px-3 py-3 text-right font-semibold">Valor Venta</th>
+                <th class="px-3 py-3 text-right font-semibold">IGV (18%)</th>
+                <th class="px-3 py-3 text-right font-semibold">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              @for (item of detalles; track item.idDetalle) {
+                <tr>
+                  <td class="px-3 py-4 text-slate-600">{{ item.productoServicio?.codigo || '-' }}</td>
+                  <td class="px-3 py-4 font-medium">{{ item.productoServicio?.nombre || item.productoServicio?.descripcion || '-' }}</td>
+                  <td class="px-3 py-4 text-center">{{ item.cantidad | number:'1.0-2' }}</td>
+                  <td class="px-3 py-4 text-center">{{ item.productoServicio?.unidadMedida || '-' }}</td>
+                  <td class="px-3 py-4 text-right">{{ formatMoney(item.precioUnitario) }}</td>
+                  <td class="px-3 py-4 text-right">{{ formatMoney(item.valorVenta) }}</td>
+                  <td class="px-3 py-4 text-right">{{ formatMoney(item.igv) }}</td>
+                  <td class="px-3 py-4 text-right font-bold">{{ formatMoney(item.totalLinea) }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="px-3 py-8 text-center text-slate-500">Sin detalle registrado.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <section class="mt-8 grid gap-8 md:grid-cols-[1fr_320px]">
+          <div>
+            <div class="rounded-xl border border-slate-200 p-4">
+              <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Son:</p>
+              <p class="mt-2 text-sm font-bold text-slate-900">{{ totalEnLetras }}</p>
+            </div>
+
+            <div class="mt-5 space-y-1 text-xs text-slate-500">
+              <p>Observaciones: {{ comprobante.observacion || 'Documento generado desde el sistema de facturacion electronica.' }}</p>
+              <p>Respuesta SUNAT: {{ respuesta?.descripcionRespuesta || 'Pendiente de respuesta SUNAT.' }}</p>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 p-5">
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Subtotal</span>
+                <span class="font-semibold">{{ formatMoney(comprobante.subtotal) }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Descuentos</span>
+                <span class="font-semibold">{{ formatMoney(comprobante.descuentoTotal) }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Op. Gravadas</span>
+                <span class="font-semibold">{{ formatMoney(comprobante.subtotal) }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">IGV (18%)</span>
+                <span class="font-semibold">{{ formatMoney(comprobante.igv) }}</span>
+              </div>
+              <div class="border-t border-slate-200 pt-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-base font-bold text-slate-900">Importe Total</span>
+                  <span class="text-xl font-bold text-amber-500">{{ formatMoney(comprobante.total) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="mt-10 border-t border-slate-200 pt-8">
+          <div class="grid gap-6 md:grid-cols-[110px_1fr]">
+            <div class="qr-box grid h-24 w-24 grid-cols-5 gap-1 rounded-lg border border-slate-200 bg-white p-2">
+              @for (cell of [].constructor(25); track $index) {
+                <span [class.bg-slate-900]="$index % 2 === 0 || $index % 7 === 0" class="rounded-sm bg-slate-100"></span>
+              }
+            </div>
+
+            <div class="space-y-2 text-xs text-slate-500">
+              <p>Representacion impresa de la {{ tipoDocumento }}. El comprobante puede ser consultado en el portal de SUNAT.</p>
+              <p>Autorizado mediante resolucion de intendencia para fines academicos.</p>
+              <p>Hash: {{ respuesta?.nombreArchivoXml || serieCorrelativo }}</p>
+            </div>
+          </div>
+        </footer>
+      </article>
+    }
+  </main>
+</section>

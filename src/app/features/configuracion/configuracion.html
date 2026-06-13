@@ -1,0 +1,383 @@
+<section class="space-y-8">
+  <div>
+    <h1 class="text-[32px] font-bold leading-tight text-slate-900">
+      Configuración
+    </h1>
+
+    <p class="mt-3 text-lg text-slate-500">
+      Administre los ajustes generales del sistema, datos de la empresa y parámetros de facturación.
+    </p>
+  </div>
+
+  @if (mensaje) {
+    <p class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+      {{ mensaje }}
+    </p>
+  }
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+      {{ error }}
+    </p>
+  }
+
+  <div class="grid gap-8 xl:grid-cols-[320px_1fr]">
+    <aside class="space-y-3">
+      @for (item of menuItems; track item.id) {
+        <button
+          type="button"
+          (click)="setActiveTab(item.id)"
+          class="flex h-14 w-full items-center gap-4 rounded-lg px-5 text-left text-base font-semibold transition"
+          [ngClass]="activeTab === item.id
+            ? 'bg-amber-50 text-amber-500'
+            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'"
+        >
+          <lucide-icon [img]="item.icon" class="h-6 w-6 shrink-0"></lucide-icon>
+          <span>{{ item.label }}</span>
+        </button>
+      }
+    </aside>
+
+    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      @if (activeTab === 'empresa') {
+        <form (ngSubmit)="guardarEmpresa()">
+          <div class="p-8">
+            <h2 class="text-2xl font-bold text-slate-900">
+              Perfil de la Empresa
+            </h2>
+
+            <p class="mt-2 text-base text-slate-500">
+              Información fiscal utilizada para la emisión de comprobantes electrónicos.
+            </p>
+
+            @if (cargando) {
+              <p class="mt-8 text-sm text-slate-500">Cargando configuración...</p>
+            }
+
+            <div class="mt-8 space-y-6">
+              <div class="grid gap-6 lg:grid-cols-2">
+                <div>
+                  <label class="mb-3 block text-base font-medium text-slate-900">
+                    RUC <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    name="ruc"
+                    type="text"
+                    [(ngModel)]="empresa.ruc"
+                    readonly
+                    class="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-4 text-base text-slate-500 outline-none"
+                  />
+                  <p class="mt-3 text-sm leading-5 text-slate-500">
+                    El RUC no puede ser modificado una vez registrado el entorno.
+                  </p>
+                </div>
+
+                <div>
+                  <label class="mb-3 block text-base font-medium text-slate-900">
+                    Razón Social <span class="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="razonSocial"
+                    rows="3"
+                    [(ngModel)]="empresa.razonSocial"
+                    required
+                    class="w-full resize-none rounded-lg border border-slate-300 px-4 py-4 text-base text-slate-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="mb-3 block text-base font-medium text-slate-900">
+                    Nombre Comercial
+                  </label>
+                  <input
+                    name="nombreComercial"
+                    type="text"
+                    [(ngModel)]="empresa.nombreComercial"
+                    class="h-12 w-full rounded-lg border border-slate-300 px-4 text-base text-slate-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-3 block text-base font-medium text-slate-900">
+                    Correo de Contacto <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    name="correo"
+                    type="email"
+                    [(ngModel)]="empresa.correo"
+                    class="h-12 w-full rounded-lg border border-slate-300 px-4 text-base text-slate-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="mb-3 block text-base font-medium text-slate-900">
+                  Dirección Fiscal <span class="text-red-500">*</span>
+                </label>
+                <input
+                  name="direccionFiscal"
+                  type="text"
+                  [(ngModel)]="empresa.direccionFiscal"
+                  class="h-12 w-full rounded-lg border border-slate-300 px-4 text-base text-slate-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
+
+              <div class="grid gap-6 lg:grid-cols-2">
+                <div>
+                  <label class="mb-3 block text-base font-medium text-slate-900">
+                    Teléfono
+                  </label>
+                  <input
+                    name="telefono"
+                    type="text"
+                    [(ngModel)]="empresa.telefono"
+                    class="h-12 w-full rounded-lg border border-slate-300 px-4 text-base text-slate-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                  />
+                </div>
+
+                <div>
+                  <label class="mb-3 block text-base font-medium text-slate-900">
+                    Estado
+                  </label>
+                  <select
+                    name="estado"
+                    [(ngModel)]="empresa.estado"
+                    class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-800 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                  >
+                    <option value="ACTIVO">ACTIVO</option>
+                    <option value="INACTIVO">INACTIVO</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-4 border-t border-slate-200 bg-white px-8 py-5">
+            <button
+              type="button"
+              (click)="cargarConfiguracion()"
+              class="inline-flex h-12 items-center justify-center rounded-lg border border-slate-300 bg-white px-6 text-base font-medium text-slate-800 shadow-sm transition hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              [disabled]="guardando"
+              class="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-amber-400 px-6 text-base font-bold text-slate-900 shadow-sm transition hover:bg-amber-500 disabled:opacity-60"
+            >
+              <lucide-icon [img]="icons.Save" class="h-5 w-5"></lucide-icon>
+              {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </form>
+      }
+
+      @if (activeTab === 'series') {
+        <div class="p-8">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">
+                Series y Correlativos
+              </h2>
+
+              <p class="mt-2 text-base text-slate-500">
+                Configure las series utilizadas para facturas, boletas, notas y guías de remisión.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              (click)="abrirNuevaSerie()"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-bold text-slate-900 hover:bg-amber-500"
+            >
+              <lucide-icon [img]="icons.Plus" class="h-4 w-4"></lucide-icon>
+              Nueva serie
+            </button>
+          </div>
+
+          <div class="mt-8 overflow-hidden rounded-xl border border-slate-200">
+            <table class="min-w-full">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-5 py-4 text-left text-xs font-bold uppercase text-slate-500">Tipo Documento</th>
+                  <th class="px-5 py-4 text-left text-xs font-bold uppercase text-slate-500">Serie</th>
+                  <th class="px-5 py-4 text-left text-xs font-bold uppercase text-slate-500">Correlativo Actual</th>
+                  <th class="px-5 py-4 text-left text-xs font-bold uppercase text-slate-500">Estado</th>
+                </tr>
+              </thead>
+
+              <tbody class="divide-y divide-slate-200 bg-white">
+                @if (cargando) {
+                  <tr>
+                    <td colspan="4" class="px-5 py-8 text-center text-sm text-slate-500">Cargando series...</td>
+                  </tr>
+                }
+
+                @for (serie of series; track serie.idSerie || serie.serie) {
+                  <tr>
+                    <td class="px-5 py-4 text-sm font-medium text-slate-800">{{ tipoNombre(serie) }}</td>
+                    <td class="px-5 py-4 text-sm font-bold text-slate-700">{{ serie.serie }}</td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{{ serie.correlativoActual }}</td>
+                    <td class="px-5 py-4">
+                      <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                        {{ serie.estado }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+
+                @if (!cargando && series.length === 0) {
+                  <tr>
+                    <td colspan="4" class="px-5 py-8 text-center text-sm text-slate-500">No hay series registradas.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @if (activeTab === 'parametros') {
+        <div class="p-8">
+          <h2 class="text-2xl font-bold text-slate-900">
+            Parámetros del Sistema
+          </h2>
+
+          <p class="mt-2 text-base text-slate-500">
+            Parámetros de prototipo para emisión electrónica y comunicación simulada con SUNAT.
+          </p>
+
+          <form class="mt-8 grid gap-6 lg:grid-cols-2">
+            <div>
+              <label class="mb-3 block text-base font-medium text-slate-900">Entorno SUNAT</label>
+              <select
+                name="entornoSunat"
+                [(ngModel)]="parametros.entornoSunat"
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              >
+                <option>Beta / Pruebas</option>
+                <option>Producción</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-3 block text-base font-medium text-slate-900">Modo de Envío</label>
+              <select
+                name="modoEnvio"
+                [(ngModel)]="parametros.modoEnvio"
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              >
+                <option>SUNAT simulado</option>
+                <option>OSE simulado</option>
+                <option>PSE simulado</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-3 block text-base font-medium text-slate-900">IGV (%)</label>
+              <input
+                name="igv"
+                type="number"
+                [(ngModel)]="parametros.igv"
+                class="h-12 w-full rounded-lg border border-slate-300 px-4 text-base text-slate-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+            </div>
+
+            <div>
+              <label class="mb-3 block text-base font-medium text-slate-900">Moneda por defecto</label>
+              <select
+                name="moneda"
+                [(ngModel)]="parametros.moneda"
+                class="h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-base text-slate-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              >
+                <option value="PEN">PEN - Soles</option>
+                <option value="USD">USD - Dólares</option>
+              </select>
+            </div>
+          </form>
+        </div>
+      }
+    </article>
+  </div>
+
+  @if (mostrarSerieModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 px-4 backdrop-blur-sm">
+      <form
+        class="w-full max-w-lg rounded-xl border border-slate-200 bg-white shadow-xl"
+        (ngSubmit)="guardarSerie()"
+      >
+        <div class="flex items-start justify-between border-b border-slate-200 px-6 py-5">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Nueva serie</h2>
+            <p class="mt-1 text-sm text-slate-500">Registre una serie para un tipo de comprobante.</p>
+          </div>
+
+          <button
+            type="button"
+            (click)="mostrarSerieModal = false"
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+          >
+            <lucide-icon [img]="icons.X" class="h-4 w-4"></lucide-icon>
+          </button>
+        </div>
+
+        <div class="grid gap-4 px-6 py-5">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Tipo de comprobante</label>
+            <select
+              name="tipoComprobante"
+              [(ngModel)]="serieForm.tipoComprobante"
+              class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            >
+              @for (tipo of tiposComprobante; track tipo.idTipoComprobante || tipo.codigoSunat) {
+                <option [ngValue]="{ idTipoComprobante: tipo.idTipoComprobante }">{{ tipo.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Serie</label>
+            <input
+              name="serie"
+              [(ngModel)]="serieForm.serie"
+              required
+              placeholder="Ej. F001"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Correlativo actual</label>
+            <input
+              name="correlativoActual"
+              type="number"
+              min="0"
+              [(ngModel)]="serieForm.correlativoActual"
+              required
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+          <button
+            type="button"
+            (click)="mostrarSerieModal = false"
+            class="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="guardando"
+            class="h-10 rounded-lg bg-amber-400 px-5 text-sm font-bold text-slate-900 hover:bg-amber-500 disabled:opacity-60"
+          >
+            {{ guardando ? 'Guardando...' : 'Guardar serie' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</section>

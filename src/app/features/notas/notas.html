@@ -1,0 +1,305 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h1 class="text-[24px] font-bold leading-tight text-slate-900">Emitir Nota de Crédito / Débito</h1>
+      <p class="mt-2 text-sm text-slate-500">
+        Busque un comprobante original para generar su respectiva nota modificatoria según SUNAT.
+      </p>
+    </div>
+  </div>
+
+  @if (mensaje) {
+    <p class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{{ mensaje }}</p>
+  }
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{{ error }}</p>
+  }
+
+  <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <label class="mb-3 block text-sm font-bold text-slate-900">Buscar Comprobante Original</label>
+    <div class="grid gap-3 lg:grid-cols-[1fr_320px_auto]">
+      <div class="relative">
+        <input
+          type="text"
+          [(ngModel)]="busqueda"
+          placeholder="Ej. F001-4592 o RUC/DNI"
+          class="h-11 w-full rounded-lg border border-slate-300 px-3 pl-10 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+        <lucide-icon [img]="icons.Search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></lucide-icon>
+      </div>
+
+      <select
+        class="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        (ngModelChange)="seleccionarComprobante($event)"
+        [ngModel]="comprobanteOriginal?.idComprobante"
+      >
+        <option [ngValue]="undefined">Seleccionar comprobante</option>
+        @for (comprobante of comprobantes; track comprobante.idComprobante) {
+          <option [ngValue]="comprobante.idComprobante">{{ comprobante.serie }}-{{ comprobante.correlativo }} | {{ comprobante.cliente?.razonSocial }}</option>
+        }
+      </select>
+
+      <button
+        type="button"
+        (click)="buscarDocumento()"
+        class="inline-flex h-11 items-center justify-center rounded-lg bg-amber-400 px-6 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-500"
+      >
+        Buscar Documento
+      </button>
+    </div>
+  </article>
+
+  @if (comprobanteOriginal) {
+    <article class="flex flex-col gap-4 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+      <div class="flex gap-3">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-500">
+          <lucide-icon [img]="icons.FileText" class="h-5 w-5"></lucide-icon>
+        </div>
+
+        <div>
+          <p class="text-sm font-bold text-slate-900">
+            Documento Encontrado:
+            <span>{{ comprobanteOriginal.tipoComprobante?.nombre }} {{ comprobanteOriginal.serie }}-{{ comprobanteOriginal.correlativo }}</span>
+          </p>
+          <p class="mt-1 text-xs text-slate-500">
+            Emitido: {{ comprobanteOriginal.fechaEmision.slice(0, 10) }}
+            <span class="mx-2">Doc: {{ comprobanteOriginal.cliente?.numeroDocumento }}</span>
+            {{ comprobanteOriginal.cliente?.razonSocial }}
+          </p>
+        </div>
+      </div>
+
+      <div class="text-right">
+        <p class="text-xs font-semibold uppercase text-slate-500">Total Original</p>
+        <p class="text-xl font-bold text-slate-900">PEN {{ formatMoney(comprobanteOriginal.total) }}</p>
+      </div>
+    </article>
+  }
+
+  <div class="grid gap-5 xl:grid-cols-[320px_1fr]">
+    <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="text-base font-bold text-slate-900">Configuración de la Nota</h2>
+      <p class="mt-1 text-sm text-slate-500">Determine el tipo y el motivo legal.</p>
+
+      <div class="mt-5">
+        <label class="mb-2 block text-sm font-medium text-slate-800">Tipo de Nota</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            (click)="setTipoNota('CREDITO')"
+            class="flex h-14 items-center justify-center gap-2 rounded-lg text-sm font-semibold"
+            [ngClass]="tipoNota === 'CREDITO'
+              ? 'border-2 border-amber-400 bg-amber-50 text-amber-500'
+              : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'"
+          >
+            <lucide-icon [img]="icons.Minus" class="h-4 w-4"></lucide-icon>
+            Nota de Crédito
+          </button>
+
+          <button
+            type="button"
+            (click)="setTipoNota('DEBITO')"
+            class="flex h-14 items-center justify-center gap-2 rounded-lg text-sm font-semibold"
+            [ngClass]="tipoNota === 'DEBITO'
+              ? 'border-2 border-amber-400 bg-amber-50 text-amber-500'
+              : 'border border-slate-200 bg-white text-slate-500 hover:bg-slate-50'"
+          >
+            <lucide-icon [img]="icons.Plus" class="h-4 w-4"></lucide-icon>
+            Nota de Débito
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-5">
+        <label class="mb-2 block text-sm font-medium text-slate-800">Motivo (Catálogo SUNAT)</label>
+        <select
+          [(ngModel)]="motivo"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>06 - Devolución total</option>
+          <option>07 - Devolución por ítem</option>
+          <option>09 - Disminución en el valor</option>
+          <option>10 - Otros conceptos</option>
+          <option>01 - Intereses por mora</option>
+        </select>
+      </div>
+
+      <div class="mt-5">
+        <div class="mb-2 flex items-center justify-between">
+          <label class="block text-sm font-medium text-slate-800">Sustento / Descripción</label>
+          <span class="text-xs font-medium text-slate-400">Requerido</span>
+        </div>
+        <textarea
+          rows="6"
+          [(ngModel)]="descripcion"
+          class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        ></textarea>
+      </div>
+    </article>
+
+    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Ítems Afectados</h2>
+          <p class="mt-1 text-sm text-slate-500">Seleccione y modifique los ítems a incluir en la nota.</p>
+        </div>
+        <button
+          type="button"
+          (click)="restaurarOriginales()"
+          class="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          <lucide-icon [img]="icons.RotateCcw" class="h-4 w-4"></lucide-icon>
+          Restaurar Originales
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-slate-50">
+            <tr class="border-b border-slate-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Inc.</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Código / Descripción</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase text-slate-500">Cant. Orig.</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase text-slate-500">Cant. Afectar</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">V. Unit (PEN)</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Subtotal (PEN)</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-200">
+            @for (item of itemsAfectados; track item.codigo) {
+              <tr class="transition hover:bg-slate-50">
+                <td class="px-4 py-4">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="item.seleccionado"
+                    (ngModelChange)="recalcularItem(item)"
+                    class="h-4 w-4 rounded border-slate-300 accent-amber-400"
+                  />
+                </td>
+                <td class="min-w-[230px] px-4 py-4">
+                  <p class="text-sm font-bold text-slate-700">{{ item.codigo }}</p>
+                  <p class="mt-1 text-sm text-slate-500">{{ item.descripcion }}</p>
+                </td>
+                <td class="whitespace-nowrap px-4 py-4 text-center text-sm text-slate-500">{{ item.cantidadOriginal }}</td>
+                <td class="px-4 py-4 text-center">
+                  <input
+                    type="number"
+                    [(ngModel)]="item.cantidadAfectar"
+                    (ngModelChange)="recalcularItem(item)"
+                    class="h-9 w-16 rounded-lg border border-slate-300 px-2 text-center text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                  />
+                </td>
+                <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-medium text-slate-700">{{ formatMoney(item.valorUnitario) }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-slate-900">{{ formatMoney(item.subtotal) }}</td>
+              </tr>
+            }
+
+            @if (itemsAfectados.length === 0) {
+              <tr>
+                <td colspan="6" class="px-4 py-8 text-center text-sm text-slate-500">Seleccione un comprobante original.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="border-t border-slate-200 px-5 py-4">
+        <div class="ml-auto max-w-xs space-y-2 text-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">Op. Gravadas:</span>
+            <span class="font-semibold text-slate-900">PEN {{ formatMoney(subtotalNota) }}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-slate-500">IGV (18%):</span>
+            <span class="font-semibold text-slate-900">PEN {{ formatMoney(igvNota) }}</span>
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <span class="text-base font-bold text-slate-900">Total Nota:</span>
+            <span class="text-xl font-bold text-amber-500">PEN {{ formatMoney(totalNota) }}</span>
+          </div>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div class="flex flex-wrap justify-end gap-3">
+    <button type="button" class="inline-flex h-10 items-center justify-center rounded-lg bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Cancelar</button>
+    <button
+      type="button"
+      (click)="generarNota(false)"
+      [disabled]="guardando"
+      class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 transition hover:bg-amber-500 disabled:opacity-60"
+    >
+      <lucide-icon [img]="icons.CheckCircle2" class="h-4 w-4"></lucide-icon>
+      {{ guardando ? 'Generando...' : 'Generar Nota' }}
+    </button>
+    <button
+      type="button"
+      (click)="generarNota(true)"
+      [disabled]="guardando"
+      class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+    >
+      <lucide-icon [img]="icons.Send" class="h-4 w-4"></lucide-icon>
+      Generar y Enviar a SUNAT
+    </button>
+  </div>
+
+  <article class="space-y-4">
+    <div class="flex items-center gap-2">
+      <lucide-icon [img]="icons.Clock3" class="h-5 w-5 text-slate-500"></lucide-icon>
+      <h2 class="text-base font-bold text-slate-900">Historial Relacionado</h2>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-slate-50">
+            <tr class="border-b border-slate-200">
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Fecha</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Tipo</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Número</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Motivo</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Monto</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Estado SUNAT</th>
+              <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-slate-500">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of historial; track item.numero) {
+              <tr>
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500">{{ item.fecha }}</td>
+                <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-slate-800">{{ item.tipo }}</td>
+                <td class="whitespace-nowrap px-5 py-4 text-sm font-bold text-amber-500">{{ item.numero }}</td>
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500">{{ item.motivo }}</td>
+                <td class="whitespace-nowrap px-5 py-4 text-sm font-medium text-slate-800">{{ item.monto }}</td>
+                <td class="whitespace-nowrap px-5 py-4">
+                  <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="getEstadoClass(item.estadoSunat)">
+                    {{ item.estadoSunat }}
+                  </span>
+                </td>
+                <td class="whitespace-nowrap px-5 py-4 text-right">
+                  @if (item.estadoSunat === 'Pendiente') {
+                    <button
+                      type="button"
+                      (click)="enviarNotaSunat(item)"
+                      [disabled]="enviandoNotaId === item.idComprobanteNota"
+                      title="Enviar nota a SUNAT simulada"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <lucide-icon [img]="icons.Send" class="h-4 w-4"></lucide-icon>
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+            @if (historial.length === 0) {
+              <tr><td colspan="7" class="px-5 py-8 text-center text-sm text-slate-500">No hay notas registradas.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </article>
+</section>

@@ -1,0 +1,397 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <h1 class="text-[26px] font-bold leading-tight text-slate-900">Guía de Remisión Remitente</h1>
+      <p class="mt-2 text-sm font-medium text-slate-500">
+        Complete los datos obligatorios (*) para generar el documento electrónico.
+      </p>
+    </div>
+
+    <div class="text-right">
+      <p class="text-xs font-semibold uppercase text-slate-400">Estado SUNAT</p>
+      <p class="text-sm font-bold text-slate-900">Borrador</p>
+    </div>
+  </div>
+
+  @if (mensaje) {
+    <p class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{{ mensaje }}</p>
+  }
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{{ error }}</p>
+  }
+
+  @if (cargando) {
+    <p class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">Cargando datos de guía...</p>
+  }
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+      <lucide-icon [img]="icons.FileText" class="h-5 w-5 text-amber-500"></lucide-icon>
+      <h2 class="text-lg font-bold text-amber-500">Datos del Documento</h2>
+    </div>
+
+    <div class="grid gap-5 p-5 md:grid-cols-2 xl:grid-cols-4">
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Serie <span class="text-red-500">*</span></label>
+        <select
+          [(ngModel)]="idSerie"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          @for (serie of series; track serie.idSerie || serie.serie) {
+            <option [ngValue]="serie.idSerie">{{ serie.serie }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Correlativo</label>
+        <input
+          type="text"
+          [value]="correlativoSiguiente || 'Autogenerado'"
+          readonly
+          class="h-10 w-full rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm font-medium text-slate-500 outline-none"
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Fecha Emisión <span class="text-red-500">*</span></label>
+        <input
+          type="date"
+          [(ngModel)]="fechaEmision"
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Fecha Traslado <span class="text-red-500">*</span></label>
+        <input
+          type="date"
+          [(ngModel)]="fechaTraslado"
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+      </div>
+
+      <div class="md:col-span-1 xl:col-span-2">
+        <label class="mb-2 block text-sm font-bold text-slate-700">Motivo de Traslado <span class="text-red-500">*</span></label>
+        <select
+          [(ngModel)]="motivoTraslado"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>01 - Venta</option>
+          <option>04 - Traslado entre establecimientos</option>
+          <option>13 - Otros</option>
+        </select>
+      </div>
+
+      <div class="md:col-span-1 xl:col-span-2">
+        <label class="mb-2 block text-sm font-bold text-slate-700">Modalidad de Traslado <span class="text-red-500">*</span></label>
+        <select
+          [(ngModel)]="modalidadTraslado"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>01 - Transporte público</option>
+          <option>02 - Transporte privado</option>
+        </select>
+      </div>
+    </div>
+  </article>
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+      <lucide-icon [img]="icons.User" class="h-5 w-5 text-amber-500"></lucide-icon>
+      <h2 class="text-lg font-bold text-amber-500">Cliente y Referencia</h2>
+    </div>
+
+    <div class="grid gap-6 p-5 xl:grid-cols-2">
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Cliente Destinatario <span class="text-red-500">*</span></label>
+        <div class="grid gap-2 sm:grid-cols-[1fr_auto]">
+          <select
+            [(ngModel)]="idCliente"
+            (ngModelChange)="seleccionarCliente()"
+            class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            <option [ngValue]="undefined">Seleccione cliente</option>
+            @for (cliente of clientes; track cliente.idCliente || cliente.numeroDocumento) {
+              <option [ngValue]="cliente.idCliente">{{ cliente.razonSocial }}</option>
+            }
+          </select>
+          <button
+            type="button"
+            (click)="buscarCliente()"
+            class="h-10 rounded-lg border border-slate-300 bg-slate-100 px-5 text-sm font-semibold text-slate-600 hover:bg-slate-200"
+          >
+            Buscar
+          </button>
+        </div>
+
+        <input
+          type="text"
+          [(ngModel)]="clienteDocumento"
+          placeholder="Buscar por RUC/DNI"
+          class="mt-3 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+
+        <div class="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <p class="text-base font-bold text-slate-900">{{ clienteSeleccionado?.razonSocial || 'Seleccione un cliente' }}</p>
+          <p class="mt-1 text-sm text-slate-500">{{ clienteSeleccionado?.direccion || '-' }}</p>
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Comprobante Relacionado (Opcional)</label>
+        <select
+          [(ngModel)]="idComprobanteRelacionado"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option [ngValue]="undefined">Sin comprobante relacionado</option>
+          @for (comprobante of comprobantes; track comprobante.idComprobante) {
+            <option [ngValue]="comprobante.idComprobante">{{ comprobante.serie }}-{{ comprobante.correlativo }} | {{ comprobante.cliente?.razonSocial }}</option>
+          }
+        </select>
+
+        <div class="mt-6 flex gap-2 text-sm text-slate-600">
+          <lucide-icon [img]="icons.Info" class="mt-0.5 h-4 w-4 shrink-0 text-slate-500"></lucide-icon>
+          <p>Vincular una factura agiliza el llenado automático de los bienes a transportar.</p>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+      <lucide-icon [img]="icons.MapPin" class="h-5 w-5 text-amber-500"></lucide-icon>
+      <h2 class="text-lg font-bold text-amber-500">Direcciones de Traslado</h2>
+    </div>
+
+    <div class="grid gap-6 p-5 xl:grid-cols-2">
+      <div class="xl:border-r xl:border-slate-200 xl:pr-8">
+        <label class="mb-2 block text-sm font-bold text-slate-700">Dirección Completa de Partida <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="direccionPartida"
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Dirección Completa de Llegada <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="direccionLlegada"
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+      </div>
+    </div>
+  </article>
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+      <lucide-icon [img]="icons.Truck" class="h-5 w-5 text-amber-500"></lucide-icon>
+      <h2 class="text-lg font-bold text-amber-500">Datos del Transportista</h2>
+    </div>
+
+    <div class="grid gap-5 p-5 md:grid-cols-2 xl:grid-cols-3">
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Documento Transportista</label>
+        <input type="text" [(ngModel)]="documentoTransportista" class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" />
+      </div>
+      <div class="xl:col-span-2">
+        <label class="mb-2 block text-sm font-bold text-slate-700">Razón Social Transportista</label>
+        <input type="text" [(ngModel)]="transportista" class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-bold text-slate-700">Placa del Vehículo</label>
+        <input type="text" [(ngModel)]="placaVehiculo" class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" />
+      </div>
+    </div>
+  </article>
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="flex flex-col items-center justify-center border-b border-slate-200 px-5 py-5 text-center">
+      <div class="flex items-center gap-2">
+        <lucide-icon [img]="icons.PackageOpen" class="h-5 w-5 text-amber-500"></lucide-icon>
+        <h2 class="text-lg font-bold text-amber-500">Bienes a Transportar</h2>
+      </div>
+    </div>
+
+    <div class="grid gap-3 p-5 md:grid-cols-[1fr_100px_120px_auto]">
+      <select
+        [(ngModel)]="productoSeleccionadoId"
+        (ngModelChange)="seleccionarProducto()"
+        class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+      >
+        <option [ngValue]="undefined">Seleccione bien</option>
+        @for (producto of productos; track producto.idProductoServicio || producto.codigo) {
+          <option [ngValue]="producto.idProductoServicio">{{ producto.codigo }} - {{ producto.nombre }}</option>
+        }
+      </select>
+      <input type="number" min="1" [(ngModel)]="cantidad" class="h-10 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" />
+      <input type="number" min="0" step="0.01" [(ngModel)]="peso" placeholder="Peso KG" class="h-10 rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100" />
+      <button type="button" (click)="agregarBien()" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        <lucide-icon [img]="icons.Plus" class="h-4 w-4"></lucide-icon>
+        Agregar Ítem
+      </button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-white">
+          <tr class="border-b border-slate-100">
+            <th class="px-8 py-5 text-left text-xs font-bold uppercase text-slate-500">Código</th>
+            <th class="px-8 py-5 text-left text-xs font-bold uppercase text-slate-500">Descripción del Producto</th>
+            <th class="px-8 py-5 text-center text-xs font-bold uppercase text-slate-500">Cant.</th>
+            <th class="px-8 py-5 text-center text-xs font-bold uppercase text-slate-500">Unidad</th>
+            <th class="px-8 py-5 text-center text-xs font-bold uppercase text-slate-500">Peso (KG)</th>
+            <th class="px-8 py-5 text-center text-xs font-bold uppercase text-slate-500">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (bien of bienes; track bien.producto.idProductoServicio; let i = $index) {
+            <tr class="hover:bg-slate-50">
+              <td class="whitespace-nowrap px-8 py-6 text-sm font-bold text-slate-600">{{ bien.producto.codigo }}</td>
+              <td class="min-w-[320px] px-8 py-6 text-sm font-bold text-slate-800">{{ bien.descripcion }}</td>
+              <td class="whitespace-nowrap px-8 py-6 text-center text-sm font-semibold text-slate-700">{{ bien.cantidad }}</td>
+              <td class="whitespace-nowrap px-8 py-6 text-center"><span class="inline-flex rounded-md bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">{{ bien.unidadMedida }}</span></td>
+              <td class="whitespace-nowrap px-8 py-6 text-center text-sm font-bold text-slate-700">{{ formatNumber(bien.peso) }}</td>
+              <td class="whitespace-nowrap px-8 py-6 text-center">
+                <button type="button" (click)="quitarBien(i)" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-red-500">
+                  <lucide-icon [img]="icons.Trash2" class="h-4 w-4"></lucide-icon>
+                </button>
+              </td>
+            </tr>
+          }
+
+          @if (bienes.length === 0) {
+            <tr><td colspan="6" class="px-8 py-8 text-center text-sm text-slate-500">Agregue bienes a transportar.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="rounded-xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
+    <div class="flex flex-wrap justify-end gap-3">
+      @if (idGuiaEditando) {
+        <button type="button" (click)="cancelarEdicion()" class="inline-flex h-10 items-center justify-center rounded-lg bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          Cancelar edición
+        </button>
+      }
+
+      <button type="button" (click)="guardarBorrador()" [disabled]="guardando" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-100 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-60">
+        <lucide-icon [img]="icons.Save" class="h-4 w-4"></lucide-icon>
+        {{ idGuiaEditando ? 'Actualizar Borrador' : 'Guardar Borrador' }}
+      </button>
+      <button type="button" (click)="enviarSunat()" [disabled]="guardando" class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-bold text-slate-900 transition hover:bg-amber-500 disabled:opacity-60">
+        <lucide-icon [img]="icons.Send" class="h-4 w-4"></lucide-icon>
+        {{ guardando ? 'Guardando...' : 'Enviar a SUNAT' }}
+      </button>
+    </div>
+  </article>
+
+  <article class="space-y-4">
+    <div class="flex items-center gap-2">
+      <lucide-icon [img]="icons.FileCheck2" class="h-5 w-5 text-slate-500"></lucide-icon>
+      <h2 class="text-base font-bold text-slate-900">Guías registradas</h2>
+    </div>
+
+    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead class="bg-slate-50">
+            <tr class="border-b border-slate-200">
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Fecha</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Guía</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Cliente</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Traslado</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Llegada</th>
+              <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Estado</th>
+              <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-slate-500">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-200">
+            @for (guia of guias; track guia.idGuia || formatSerieCorrelativo(guia)) {
+              <tr class="transition hover:bg-slate-50">
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500">
+                  {{ guia.fechaEmision.slice(0, 10) || '-' }}
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-sm font-bold text-slate-900">
+                  {{ formatSerieCorrelativo(guia) }}
+                </td>
+
+                <td class="min-w-[220px] px-5 py-4">
+                  <p class="text-sm font-semibold text-slate-900">{{ guia.cliente?.razonSocial || '-' }}</p>
+                  <p class="mt-1 text-xs text-slate-500">{{ guia.cliente?.numeroDocumento || '-' }}</p>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-sm text-slate-500">
+                  {{ guia.fechaTraslado.slice(0, 10) || '-' }}
+                </td>
+
+                <td class="min-w-[260px] px-5 py-4 text-sm text-slate-500">
+                  {{ guia.direccionLlegada || '-' }}
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4">
+                  <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="estadoGuiaClass(guia.estado)">
+                    {{ estadoGuiaLabel(guia.estado) }}
+                  </span>
+                </td>
+
+                <td class="whitespace-nowrap px-5 py-4 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    @if (puedeConvertirAEnvio(guia)) {
+                      <button
+                        type="button"
+                        (click)="editarBorrador(guia)"
+                        [disabled]="procesandoGuiaId === guia.idGuia"
+                        title="Editar borrador"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <lucide-icon [img]="icons.Pencil" class="h-4 w-4"></lucide-icon>
+                      </button>
+
+                      <button
+                        type="button"
+                        (click)="convertirBorradorAEnvio(guia)"
+                        [disabled]="procesandoGuiaId === guia.idGuia"
+                        title="Pasar a pendiente de envío"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-amber-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <lucide-icon [img]="icons.FileCheck2" class="h-4 w-4"></lucide-icon>
+                      </button>
+                    }
+
+                    @if (puedeEnviarSunat(guia)) {
+                      <button
+                        type="button"
+                        (click)="enviarGuiaSunat(guia)"
+                        [disabled]="procesandoGuiaId === guia.idGuia"
+                        title="Enviar guía a SUNAT simulada"
+                        class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-emerald-100 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <lucide-icon [img]="icons.Send" class="h-4 w-4"></lucide-icon>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (guias.length === 0) {
+              <tr>
+                <td colspan="7" class="px-5 py-8 text-center text-sm text-slate-500">
+                  No hay guías registradas.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </article>
+</section>

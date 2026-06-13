@@ -1,0 +1,363 @@
+<section class="space-y-6">
+  <!-- Encabezado -->
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h1 class="text-[26px] font-bold leading-tight text-slate-900">
+        Comprobantes Emitidos
+      </h1>
+
+      <p class="mt-2 text-sm text-slate-500">
+        Gestione y consulte el estado de todas las facturas, boletas y notas electrónicas enviadas a SUNAT.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+      >
+        <lucide-icon
+          [img]="icons.Download"
+          class="h-4 w-4"
+        ></lucide-icon>
+        Exportar
+      </button>
+
+      <a
+        routerLink="/comprobantes/nuevo"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-500"
+      >
+        <lucide-icon
+          [img]="icons.FileText"
+          class="h-4 w-4"
+        ></lucide-icon>
+        Nueva Factura
+      </a>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="mb-2 flex flex-col items-center justify-center text-center">
+      <div class="flex items-center gap-2">
+        <lucide-icon
+          [img]="icons.Filter"
+          class="h-5 w-5 text-slate-600"
+        ></lucide-icon>
+
+        <h2 class="text-base font-bold text-slate-900">
+          Filtros de Búsqueda
+        </h2>
+      </div>
+
+      <button
+        type="button"
+        class="mt-2 text-xs font-medium text-slate-500 hover:text-slate-700"
+      >
+        Ocultar filtros
+      </button>
+    </div>
+
+    <div class="mt-5 grid gap-4 lg:grid-cols-4">
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Rango de Fechas
+        </label>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="relative">
+            <input
+              type="date"
+              [(ngModel)]="filters.fechaDesde"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div class="relative">
+            <input
+              type="date"
+              [(ngModel)]="filters.fechaHasta"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Tipo Comprobante
+        </label>
+
+        <select
+          [(ngModel)]="filters.tipo"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>Todos</option>
+          <option>Factura</option>
+          <option>Boleta</option>
+          <option>Nota de Crédito</option>
+          <option>Nota de Débito</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Cliente (RUC/Razón Social)
+        </label>
+
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="filters.cliente"
+            placeholder="Buscar por RUC o nombre..."
+            class="h-10 w-full rounded-lg border border-slate-300 px-3 pl-9 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+
+          <lucide-icon
+            [img]="icons.Search"
+            class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          ></lucide-icon>
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Estado SUNAT
+        </label>
+
+        <select
+          [(ngModel)]="filters.estado"
+          class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>Todos</option>
+          <option>Aceptado</option>
+          <option>Pendiente</option>
+          <option>Observado</option>
+          <option>Rechazado</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Serie y Correlativo
+        </label>
+
+        <div class="flex flex-wrap gap-2">
+          <input
+            type="text"
+            [(ngModel)]="filters.serie"
+            placeholder="Serie (Ej. F001)"
+            class="h-10 w-36 rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+
+          <input
+            type="text"
+            [(ngModel)]="filters.correlativo"
+            placeholder="Correlativo (Ej. 0001)"
+            class="h-10 w-44 rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-700"
+        >
+          <lucide-icon
+            [img]="icons.X"
+            class="h-4 w-4"
+          ></lucide-icon>
+          Limpiar
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-500"
+        >
+          <lucide-icon
+            [img]="icons.Search"
+            class="h-4 w-4"
+          ></lucide-icon>
+          Buscar
+        </button>
+      </div>
+    </div>
+  </article>
+
+  @if (mensaje) {
+    <p class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+      {{ mensaje }}
+    </p>
+  }
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+      {{ error }}
+    </p>
+  }
+
+  <!-- Tabla -->
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-slate-50">
+          <tr class="border-b border-slate-200">
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Fecha
+            </th>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Tipo
+            </th>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Serie - Correlativo
+            </th>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Cliente
+            </th>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Total
+            </th>
+            <th class="px-5 py-4 text-left text-xs font-semibold uppercase text-slate-500">
+              Estado SUNAT
+            </th>
+            <th class="px-5 py-4 text-right text-xs font-semibold uppercase text-slate-500">
+              Acciones
+            </th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+          @for (item of filteredComprobantes; track item.serieCorrelativo) {
+            <tr class="transition hover:bg-slate-50">
+              <td class="whitespace-nowrap px-5 py-5 text-sm text-slate-700">
+                {{ item.fecha }}
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm font-medium text-slate-800">
+                {{ item.tipo }}
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm">
+                <span class="font-bold text-slate-900">
+                  {{ item.serieCorrelativo.split('-')[0] }}
+                </span>-<span class="text-slate-500">{{ item.serieCorrelativo.split('-')[1] }}</span>
+              </td>
+
+              <td class="min-w-[260px] px-5 py-5">
+                <p class="text-sm font-semibold text-slate-900">
+                  {{ item.cliente }}
+                </p>
+                <p class="mt-1 text-xs text-slate-500">
+                  {{ item.documentoCliente }}
+                </p>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm font-semibold text-slate-900">
+                {{ item.total }}
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm font-bold">
+                <span [ngClass]="getEstadoClass(item.estadoSunat)">
+                  {{ item.estadoSunat }}
+                </span>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  @if (item.estadoSunat === 'Pendiente') {
+                    <button
+                      type="button"
+                      (click)="enviarSunat(item)"
+                      [disabled]="enviandoId === item.idComprobante"
+                      title="Enviar a SUNAT simulada"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-amber-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <lucide-icon
+                        [img]="icons.Send"
+                        class="h-4 w-4"
+                      ></lucide-icon>
+                    </button>
+                  }
+
+                  <a
+                    [routerLink]="item.idComprobante ? ['/comprobantes', item.idComprobante] : ['/comprobantes']"
+                    title="Ver detalle"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    <lucide-icon
+                      [img]="icons.Eye"
+                      class="h-4 w-4"
+                    ></lucide-icon>
+                  </a>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">
+                No se encontraron comprobantes con los filtros seleccionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer tabla -->
+    <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm text-slate-500">
+        Mostrando {{ filteredComprobantes.length }} de <strong class="font-semibold text-slate-700">{{ comprobantes.length }}</strong> resultados
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-400"
+        >
+          Anterior
+        </button>
+
+        <button
+          type="button"
+          class="h-8 min-w-8 rounded-lg bg-amber-400 px-3 text-sm font-bold text-slate-900"
+        >
+          1
+        </button>
+
+        <button
+          type="button"
+          class="h-8 min-w-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          2
+        </button>
+
+        <button
+          type="button"
+          class="h-8 min-w-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          3
+        </button>
+
+        <span class="px-1 text-sm text-slate-400">...</span>
+
+        <button
+          type="button"
+          class="h-8 min-w-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          35
+        </button>
+
+        <button
+          type="button"
+          class="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  </article>
+</section>

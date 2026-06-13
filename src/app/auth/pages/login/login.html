@@ -1,0 +1,121 @@
+<main class="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+  <section class="w-full max-w-[420px] rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div class="mb-7 text-center">
+      <div class="mx-auto mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-amber-400 text-white shadow-[0_0_20px_rgba(251,191,36,0.35)]">
+        <lucide-icon
+          [img]="icons.ReceiptText"
+          class="h-6 w-6"
+        ></lucide-icon>
+      </div>
+
+      <h1 class="text-[22px] font-bold leading-tight text-slate-900">
+        Sistema Web de Facturación Electrónica
+      </h1>
+
+      <p class="mx-auto mt-3 max-w-xs text-sm leading-5 text-slate-500">
+        Ingresa tus credenciales corporativas para acceder al panel de administración.
+      </p>
+    </div>
+
+    <form
+      class="space-y-5"
+      (ngSubmit)="iniciarSesion()"
+    >
+      <div>
+        <label class="mb-2 block text-sm font-medium text-slate-800">
+          Correo electrónico
+        </label>
+
+        <div class="relative">
+          <lucide-icon
+            [img]="icons.Mail"
+            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          ></lucide-icon>
+
+          <input
+            name="correo"
+            type="email"
+            [(ngModel)]="correo"
+            placeholder="usuario@ferreycorp.com.pe"
+            class="h-10 w-full rounded-lg border border-slate-300 pl-10 pr-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+      </div>
+
+      <div>
+        <div class="mb-2 flex items-center justify-between gap-3">
+          <label class="block text-sm font-medium text-slate-800">
+            Contraseña
+          </label>
+
+          <button
+            type="button"
+            class="text-xs font-semibold text-amber-500 transition hover:text-amber-600"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
+
+        <div class="relative">
+          <lucide-icon
+            [img]="icons.Lock"
+            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+          ></lucide-icon>
+
+          <input
+            name="password"
+            [type]="mostrarPassword ? 'text' : 'password'"
+            [(ngModel)]="password"
+            placeholder="••••••••"
+            class="h-10 w-full rounded-lg border border-slate-300 px-10 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+
+          <button
+            type="button"
+            class="absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-slate-400 transition hover:text-slate-700"
+            title="Mostrar contraseña"
+            (click)="mostrarPassword = !mostrarPassword"
+          >
+            <lucide-icon
+              [img]="icons.Eye"
+              class="h-4 w-4"
+            ></lucide-icon>
+          </button>
+        </div>
+      </div>
+
+      <label class="flex items-center gap-3 text-sm text-slate-500">
+        <input
+          name="recordar"
+          type="checkbox"
+          [(ngModel)]="recordar"
+          class="h-4 w-4 rounded border-slate-300 text-amber-400 focus:ring-amber-300"
+        />
+        Recordar mis datos en este equipo
+      </label>
+
+      @if (error) {
+        <p class="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
+          {{ error }}
+        </p>
+      }
+
+      <button
+        type="submit"
+        class="h-12 w-full rounded-lg bg-amber-400 px-4 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-amber-500"
+      >
+        Iniciar sesión
+      </button>
+    </form>
+
+    <p class="mt-8 text-center text-xs leading-5 text-slate-500">
+      ¿Necesitas ayuda para acceder?
+      <br />
+      Contacta a <span class="font-semibold text-amber-500">Soporte TI Interno.</span>
+    </p>
+  </section>
+
+  <p class="fixed bottom-7 left-1/2 w-full -translate-x-1/2 px-4 text-center text-xs text-slate-300">
+    © 2026 Sistema Web de Facturación Electrónica. Ferreycorp S.A.A.
+  </p>
+</main>

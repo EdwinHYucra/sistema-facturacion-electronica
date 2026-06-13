@@ -1,0 +1,385 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+    <div>
+      <h1 class="text-[24px] font-bold leading-tight text-slate-900">
+        Nueva Factura / Boleta
+      </h1>
+      <p class="mt-2 text-sm text-slate-500">
+        Complete los datos para generar un nuevo comprobante electrónico.
+      </p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <a
+        routerLink="/comprobantes"
+        class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+      >
+        Cancelar
+      </a>
+
+      <button
+        type="button"
+        (click)="guardarBorrador()"
+        [disabled]="guardando"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-200 disabled:opacity-60"
+      >
+        <lucide-icon [img]="icons.Save" class="h-4 w-4"></lucide-icon>
+        Guardar Borrador
+      </button>
+
+      <button
+        type="button"
+        (click)="generarEnviarSunat()"
+        [disabled]="guardando"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-500 disabled:opacity-60"
+      >
+        <lucide-icon [img]="icons.Send" class="h-4 w-4"></lucide-icon>
+        {{ guardando ? 'Procesando...' : 'Generar y Enviar a SUNAT' }}
+      </button>
+    </div>
+  </div>
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+      {{ error }}
+    </p>
+  }
+
+  @if (cargando) {
+    <p class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
+      Cargando datos del comprobante...
+    </p>
+  }
+
+  <div class="grid gap-5 xl:grid-cols-2">
+    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+        <lucide-icon [img]="icons.Building2" class="h-5 w-5 text-slate-500"></lucide-icon>
+        <h2 class="text-base font-bold text-slate-900">Datos del Cliente</h2>
+      </div>
+
+      <div class="space-y-4 p-5">
+        <div class="grid gap-3 md:grid-cols-[140px_1fr_auto]">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Cliente</label>
+            <select
+              [(ngModel)]="idCliente"
+              (ngModelChange)="seleccionarCliente()"
+              class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            >
+              <option [ngValue]="undefined">Seleccione</option>
+              @for (cliente of clientes; track cliente.idCliente || cliente.numeroDocumento) {
+                <option [ngValue]="cliente.idCliente">{{ cliente.tipoDocumento }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Número de Documento</label>
+            <input
+              type="text"
+              [(ngModel)]="clienteDocumento"
+              placeholder="RUC o DNI"
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div class="flex items-end">
+            <button
+              type="button"
+              (click)="consultarCliente()"
+              class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+            >
+              <lucide-icon [img]="icons.Search" class="h-4 w-4"></lucide-icon>
+              Consultar
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Razón Social / Nombres</label>
+          <input
+            type="text"
+            [value]="clienteSeleccionado?.razonSocial || ''"
+            readonly
+            placeholder="Nombre del cliente"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm text-slate-700 outline-none"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Dirección Fiscal</label>
+          <input
+            type="text"
+            [value]="clienteSeleccionado?.direccion || ''"
+            readonly
+            placeholder="Dirección del cliente"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 text-sm text-slate-700 outline-none"
+          />
+        </div>
+      </div>
+    </article>
+
+    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+        <lucide-icon [img]="icons.FileText" class="h-5 w-5 text-slate-500"></lucide-icon>
+        <h2 class="text-base font-bold text-slate-900">Datos del Comprobante</h2>
+      </div>
+
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Tipo Comprobante</label>
+          <select
+            [(ngModel)]="idTipoComprobante"
+            (ngModelChange)="onTipoChange()"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            @for (tipo of tiposComprobante; track tipo.idTipoComprobante || tipo.codigoSunat) {
+              <option [ngValue]="tipo.idTipoComprobante">{{ tipo.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Serie</label>
+            <select
+              [(ngModel)]="idSerie"
+              class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            >
+              @for (serie of seriesFiltradas; track serie.idSerie || serie.serie) {
+                <option [ngValue]="serie.idSerie">{{ serie.serie }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Correlativo</label>
+            <input
+              type="text"
+              [value]="correlativoSiguiente"
+              readonly
+              class="h-10 w-full rounded-lg border border-slate-300 bg-slate-100 px-3 text-sm text-slate-700 outline-none"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Fecha de Emisión</label>
+          <input
+            type="date"
+            [(ngModel)]="fechaEmision"
+            class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Moneda</label>
+          <select
+            [(ngModel)]="moneda"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            <option value="PEN">PEN - Soles</option>
+            <option value="USD">USD - Dólares</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Empresa</label>
+          <select
+            [(ngModel)]="idEmpresa"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            @for (empresa of empresas; track empresa.idEmpresa || empresa.ruc) {
+              <option [ngValue]="empresa.idEmpresa">{{ empresa.nombreComercial || empresa.razonSocial }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Vendedor / Resp.</label>
+          <select
+            [(ngModel)]="idUsuario"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            @for (usuario of usuarios; track usuario.idUsuario || usuario.correo) {
+              <option [ngValue]="usuario.idUsuario">{{ usuario.nombres }} {{ usuario.apellidos }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="border-b border-slate-200 px-5 py-5 text-center">
+      <h2 class="text-base font-bold text-slate-900">Líneas de Detalle</h2>
+      <p class="mt-1 text-sm text-slate-500">Agregue los productos o servicios a facturar.</p>
+    </div>
+
+    <div class="p-5">
+      <div class="grid gap-3 md:grid-cols-[1fr_100px_120px_120px_auto]">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Producto o Servicio</label>
+          <select
+            [(ngModel)]="productoSeleccionadoId"
+            (ngModelChange)="seleccionarProducto()"
+            class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          >
+            <option [ngValue]="undefined">Seleccione producto o servicio</option>
+            @for (producto of productos; track producto.idProductoServicio || producto.codigo) {
+              <option [ngValue]="producto.idProductoServicio">{{ producto.codigo }} - {{ producto.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Cantidad</label>
+          <input
+            type="number"
+            min="1"
+            [(ngModel)]="cantidad"
+            class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">P. Unitario</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="precioUnitario"
+            class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-slate-800">Dscto.</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            [(ngModel)]="descuento"
+            class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+        </div>
+
+        <div class="flex items-end">
+          <button
+            type="button"
+            (click)="agregarDetalle()"
+            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-300 px-4 text-sm font-semibold text-amber-900 transition hover:bg-amber-400"
+          >
+            <lucide-icon [img]="icons.Plus" class="h-4 w-4"></lucide-icon>
+            Agregar
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-5 overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Código</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold uppercase text-slate-500">Descripción</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase text-slate-500">Cant.</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase text-slate-500">Unid.</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">P. Unitario</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Dscto.</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold uppercase text-slate-500">Valor Venta</th>
+              <th class="px-4 py-3 text-center text-xs font-semibold uppercase text-slate-500">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y divide-slate-100">
+            @for (item of detalles; track item.producto.idProductoServicio; let i = $index) {
+              <tr class="hover:bg-slate-50">
+                <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-slate-600">{{ item.producto.codigo }}</td>
+                <td class="min-w-[280px] px-4 py-4 text-sm font-medium text-slate-900">{{ item.producto.nombre }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-center text-sm text-slate-700">{{ item.cantidad }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-center text-sm text-slate-700">{{ item.producto.unidadMedida }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-right text-sm text-slate-700">S/ {{ formatMoney(item.precioUnitario) }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-right text-sm text-slate-700">S/ {{ formatMoney(item.descuento) }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-right text-sm font-bold text-slate-900">S/ {{ formatMoney(item.valorVenta) }}</td>
+                <td class="whitespace-nowrap px-4 py-4 text-center">
+                  <button
+                    type="button"
+                    (click)="quitarDetalle(i)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-red-500"
+                  >
+                    <lucide-icon [img]="icons.Trash2" class="h-4 w-4"></lucide-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+
+            @if (detalles.length === 0) {
+              <tr>
+                <td colspan="8" class="px-4 py-8 text-center text-sm text-slate-500">Agregue al menos una línea de detalle.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </article>
+
+  <div class="grid gap-5 xl:grid-cols-[1fr_300px]">
+    <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <h2 class="text-base font-bold text-slate-900">Información Adicional</h2>
+      <div class="mt-4">
+        <label class="mb-2 block text-sm font-medium text-slate-800">Observaciones (Opcional)</label>
+        <textarea
+          rows="4"
+          [(ngModel)]="observacion"
+          placeholder="Ingrese observaciones o referencias para el cliente..."
+          class="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        ></textarea>
+      </div>
+
+      <div class="mt-4 flex gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <lucide-icon [img]="icons.AlertCircle" class="mt-0.5 h-4 w-4 shrink-0"></lucide-icon>
+        <p>
+          <strong>Recordatorio SUNAT:</strong>
+          Revise los datos del cliente antes de emitir. Una vez enviado y aceptado por SUNAT,
+          no podrá ser modificado sin emitir una Nota de Crédito.
+        </p>
+      </div>
+    </article>
+
+    <aside class="rounded-xl border border-amber-100 bg-white p-5 shadow-sm">
+      <h2 class="text-base font-bold text-slate-900">Resumen de Importes</h2>
+      <div class="mt-5 space-y-3 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500">Operaciones Gravadas:</span>
+          <span class="font-medium text-slate-900">S/ {{ formatMoney(subtotal) }}</span>
+        </div>
+
+        <div class="flex items-center justify-between text-red-500">
+          <span>Total Descuentos:</span>
+          <span class="font-medium">- S/ {{ formatMoney(descuentoTotal) }}</span>
+        </div>
+
+        <div class="border-t border-slate-200 pt-3">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-600">Subtotal:</span>
+            <span class="font-medium text-slate-900">S/ {{ formatMoney(subtotal) }}</span>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-slate-600">IGV (18%):</span>
+            <span class="font-medium text-slate-900">S/ {{ formatMoney(igv) }}</span>
+          </div>
+        </div>
+
+        <div class="border-t border-amber-200 pt-4">
+          <div class="flex items-center justify-between">
+            <span class="text-base font-bold text-slate-900">Importe Total:</span>
+            <span class="text-2xl font-bold text-amber-500">S/ {{ formatMoney(total) }}</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>

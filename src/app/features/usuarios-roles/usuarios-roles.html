@@ -1,0 +1,329 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h1 class="text-[26px] font-bold leading-tight text-slate-900">
+        Usuarios y Roles
+      </h1>
+
+      <p class="mt-2 text-sm text-slate-500">
+        Administre los usuarios del sistema, sus roles y permisos de acceso.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="abrirModal()"
+      class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-amber-400 px-5 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-amber-500"
+    >
+      <lucide-icon [img]="icons.Plus" class="h-4 w-4"></lucide-icon>
+      Nuevo usuario
+    </button>
+  </div>
+
+  <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Total usuarios</p>
+          <h2 class="mt-2 text-3xl font-bold text-slate-900">{{ usuarios.length }}</h2>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+          <lucide-icon [img]="icons.Users" class="h-6 w-6"></lucide-icon>
+        </div>
+      </div>
+    </article>
+
+    <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Usuarios activos</p>
+          <h2 class="mt-2 text-3xl font-bold text-slate-900">{{ usuariosActivos }}</h2>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+          <lucide-icon [img]="icons.UserCheck" class="h-6 w-6"></lucide-icon>
+        </div>
+      </div>
+    </article>
+
+    <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Usuarios inactivos</p>
+          <h2 class="mt-2 text-3xl font-bold text-slate-900">{{ usuariosInactivos }}</h2>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-700">
+          <lucide-icon [img]="icons.UserX" class="h-6 w-6"></lucide-icon>
+        </div>
+      </div>
+    </article>
+
+    <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500">Roles configurados</p>
+          <h2 class="mt-2 text-3xl font-bold text-slate-900">{{ roles.length }}</h2>
+        </div>
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+          <lucide-icon [img]="icons.ShieldCheck" class="h-6 w-6"></lucide-icon>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="grid gap-4 lg:grid-cols-[1fr_220px_220px_auto]">
+      <div class="relative">
+        <input
+          type="text"
+          [(ngModel)]="filtros.texto"
+          placeholder="Buscar por nombre o correo..."
+          class="h-10 w-full rounded-lg border border-slate-300 px-3 pl-10 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+        <lucide-icon [img]="icons.Search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></lucide-icon>
+      </div>
+
+      <select
+        [(ngModel)]="filtros.rol"
+        class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+      >
+        <option value="">Todos los roles</option>
+        @for (rol of roles; track rol.idRol || rol.nombreRol) {
+          <option [value]="rol.nombreRol">{{ rol.nombreRol }}</option>
+        }
+      </select>
+
+      <select
+        [(ngModel)]="filtros.estado"
+        class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+      >
+        <option value="">Todos los estados</option>
+        <option value="Activo">Activo</option>
+        <option value="Inactivo">Inactivo</option>
+      </select>
+
+      <button
+        type="button"
+        (click)="limpiarFiltros()"
+        class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+      >
+        Limpiar
+      </button>
+    </div>
+  </article>
+
+  @if (mensaje) {
+    <p class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">{{ mensaje }}</p>
+  }
+
+  @if (error) {
+    <p class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">{{ error }}</p>
+  }
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-slate-50">
+          <tr class="border-b border-slate-200">
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Usuario</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Correo</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Rol</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Estado</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Creación</th>
+            <th class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wide text-slate-500">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+          @if (cargando) {
+            <tr>
+              <td colspan="6" class="px-5 py-8 text-center text-sm text-slate-500">Cargando usuarios...</td>
+            </tr>
+          }
+
+          @for (usuario of usuariosFiltrados; track usuario.idUsuario || usuario.correo) {
+            <tr class="transition hover:bg-slate-50">
+              <td class="min-w-[230px] px-5 py-5">
+                <div class="flex items-center gap-3">
+                  <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-amber-600">
+                    {{ usuario.nombres[0] }}{{ usuario.apellidos[0] }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-slate-900">{{ usuario.nombres }} {{ usuario.apellidos }}</p>
+                    <p class="mt-1 text-xs text-slate-500">Usuario del sistema</p>
+                  </div>
+                </div>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm text-slate-600">{{ usuario.correo }}</td>
+
+              <td class="whitespace-nowrap px-5 py-5">
+                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold" [ngClass]="getRolClass(usuario.rol)">
+                  {{ usuario.rol }}
+                </span>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5">
+                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold" [ngClass]="getEstadoClass(usuario.estado)">
+                  {{ usuario.estado }}
+                </span>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm text-slate-500">{{ usuario.ultimoAcceso }}</td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-right">
+                <div class="flex justify-end gap-1">
+                  <button
+                    type="button"
+                    (click)="abrirEditar(usuario)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                    title="Editar usuario"
+                  >
+                    <lucide-icon [img]="icons.Pencil" class="h-4 w-4"></lucide-icon>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="eliminarUsuario(usuario)"
+                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-red-500"
+                    title="Eliminar usuario"
+                  >
+                    <lucide-icon [img]="icons.Trash2" class="h-4 w-4"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+
+          @if (!cargando && usuariosFiltrados.length === 0) {
+            <tr>
+              <td colspan="6" class="px-5 py-8 text-center text-sm text-slate-500">No se encontraron usuarios.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm text-slate-500">Mostrando {{ usuariosFiltrados.length }} de {{ usuarios.length }} usuarios</p>
+    </div>
+  </article>
+
+  @if (mostrarModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/20 px-4 backdrop-blur-[2px]">
+      <form
+        class="w-full max-w-[540px] rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl"
+        (ngSubmit)="guardarUsuario()"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold text-slate-900">{{ modoEdicion ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+            <p class="mt-1 text-sm text-slate-500">Complete los datos para registrar el usuario en el sistema.</p>
+          </div>
+
+          <button
+            type="button"
+            (click)="cerrarModal()"
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+          >
+            <lucide-icon [img]="icons.X" class="h-5 w-5"></lucide-icon>
+          </button>
+        </div>
+
+        <div class="mt-6 space-y-5">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-800">Nombres <span class="text-red-500">*</span></label>
+              <input
+                name="nombres"
+                [(ngModel)]="formulario.nombres"
+                required
+                class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-800">Apellidos <span class="text-red-500">*</span></label>
+              <input
+                name="apellidos"
+                [(ngModel)]="formulario.apellidos"
+                required
+                class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Correo electrónico <span class="text-red-500">*</span></label>
+            <input
+              name="correo"
+              type="email"
+              [(ngModel)]="formulario.correo"
+              required
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-800">Contraseña temporal <span class="text-red-500">*</span></label>
+            <input
+              name="password"
+              type="text"
+              [(ngModel)]="formulario.password"
+              required
+              class="h-10 w-full rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+            <p class="mt-2 text-xs text-slate-500">Para prototipo académico se almacena sin cifrado.</p>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-800">Rol del sistema <span class="text-red-500">*</span></label>
+              <select
+                name="idRol"
+                [(ngModel)]="formulario.idRol"
+                required
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              >
+                @for (rol of roles; track rol.idRol || rol.nombreRol) {
+                  <option [ngValue]="rol.idRol">{{ rol.nombreRol }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="mb-2 block text-sm font-medium text-slate-800">Estado inicial <span class="text-red-500">*</span></label>
+              <select
+                name="estado"
+                [(ngModel)]="formulario.estado"
+                class="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              >
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 border-t border-slate-200 pt-4">
+          <div class="flex justify-end gap-3">
+            <button
+              type="button"
+              (click)="cerrarModal()"
+              class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Cancelar
+            </button>
+
+            <button
+              type="submit"
+              [disabled]="guardando"
+              class="inline-flex h-10 items-center justify-center rounded-lg bg-amber-400 px-5 text-sm font-bold text-slate-900 transition hover:bg-amber-500 disabled:opacity-60"
+            >
+              {{ guardando ? 'Guardando...' : 'Guardar usuario' }}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  }
+</section>

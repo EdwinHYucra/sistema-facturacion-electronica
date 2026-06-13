@@ -1,0 +1,170 @@
+<section class="space-y-6">
+  <div>
+    <h1 class="text-[26px] font-bold leading-tight text-slate-900">
+      Monitor SUNAT / CDR
+    </h1>
+    <p class="mt-2 text-sm text-slate-500">
+      Supervisa en tiempo real el estado de los comprobantes electronicos enviados a la autoridad tributaria.
+    </p>
+  </div>
+
+  <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    @for (card of resumen; track card.titulo) {
+      <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium text-slate-500">{{ card.titulo }}</p>
+            <h2 class="mt-2 text-3xl font-bold text-slate-900">{{ card.valor }}</h2>
+          </div>
+
+          <div class="flex h-12 w-12 items-center justify-center rounded-full" [ngClass]="card.bgClass">
+            <lucide-icon [img]="card.icon" class="h-6 w-6" [ngClass]="card.iconClass"></lucide-icon>
+          </div>
+        </div>
+      </article>
+    }
+  </div>
+
+  <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div class="border-b border-slate-200 px-5 py-4">
+      <div class="grid gap-3 xl:grid-cols-[1fr_180px_180px_180px_auto]">
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="filters.busqueda"
+            placeholder="Buscar por cliente o documento..."
+            class="h-10 w-full rounded-lg border border-slate-300 px-3 pl-10 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          />
+          <lucide-icon [img]="icons.Search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></lucide-icon>
+        </div>
+
+        <input
+          type="date"
+          [(ngModel)]="filters.fecha"
+          class="h-10 rounded-lg border border-slate-300 px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        />
+
+        <select
+          [(ngModel)]="filters.tipo"
+          class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>Todos</option>
+          <option>Factura</option>
+          <option>Factura Electronica</option>
+          <option>Boleta</option>
+          <option>Boleta de Venta</option>
+          <option>Nota de Credito</option>
+          <option>Nota de Debito</option>
+          <option>Guia de Remision</option>
+          <option>Comprobante</option>
+        </select>
+
+        <select
+          [(ngModel)]="filters.estado"
+          class="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+        >
+          <option>Todos</option>
+          <option>Aceptado</option>
+          <option>Observado</option>
+          <option>Rechazado</option>
+          <option>Pendiente</option>
+        </select>
+
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-100 px-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+        >
+          <lucide-icon [img]="icons.Filter" class="h-4 w-4"></lucide-icon>
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead class="bg-slate-50">
+          <tr class="border-b border-slate-200">
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Documento</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Cliente</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Fecha Envio</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Estado</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Cod. Rpta</th>
+            <th class="px-5 py-4 text-left text-xs font-bold uppercase tracking-wide text-slate-500">Descripcion</th>
+            <th class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wide text-slate-500">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+          @for (item of filteredRegistros; track item.documento) {
+            <tr class="transition hover:bg-slate-50">
+              <td class="whitespace-nowrap px-5 py-5">
+                <p class="text-sm font-bold text-slate-900">{{ item.documento }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.tipo }}</p>
+              </td>
+
+              <td class="min-w-[230px] px-5 py-5">
+                <p class="text-sm font-semibold text-slate-900">{{ item.cliente }}</p>
+                <p class="mt-1 text-xs text-slate-500">{{ item.documentoCliente }}</p>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm text-slate-500">{{ item.fechaEnvio }}</td>
+
+              <td class="whitespace-nowrap px-5 py-5">
+                <span class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold" [ngClass]="getEstadoBadgeClass(item.estado)">
+                  <lucide-icon [img]="getEstadoIcon(item.estado)" class="h-3.5 w-3.5"></lucide-icon>
+                  {{ item.estado }}
+                </span>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-sm font-bold text-slate-900">{{ item.codigoRespuesta }}</td>
+
+              <td class="min-w-[360px] max-w-[520px] px-5 py-5 text-sm text-slate-500">
+                <p class="line-clamp-1">{{ item.descripcion }}</p>
+              </td>
+
+              <td class="whitespace-nowrap px-5 py-5 text-right">
+                <div class="flex justify-end gap-1">
+                  @if (item.idComprobante) {
+                    <a
+                      [routerLink]="['/comprobantes', item.idComprobante]"
+                      title="Ver detalle"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                    >
+                      <lucide-icon [img]="icons.Eye" class="h-4 w-4"></lucide-icon>
+                    </a>
+                    <a
+                      [routerLink]="['/comprobantes', item.idComprobante, 'seguimiento']"
+                      title="Ver seguimiento"
+                      class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                    >
+                      <lucide-icon [img]="icons.Route" class="h-4 w-4"></lucide-icon>
+                    </a>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">
+                No se encontraron registros SUNAT con los filtros seleccionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex flex-col gap-3 border-t border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-sm text-slate-500">
+        Mostrando {{ filteredRegistros.length }} de <strong class="font-semibold text-slate-700">{{ registros.length }}</strong> registros
+      </p>
+
+      <div class="flex items-center gap-2">
+        <button type="button" class="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-400">Anterior</button>
+        <button type="button" class="h-8 min-w-8 rounded-lg bg-amber-400 px-3 text-sm font-bold text-slate-900">1</button>
+        <button type="button" class="h-8 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700">Siguiente</button>
+      </div>
+    </div>
+  </article>
+</section>
